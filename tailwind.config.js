@@ -6,10 +6,12 @@ module.exports = {
       backgroundColor: {
         signature: "#008080",
         secondary: "#20B2AA",
-        dark: "#332D2D",
+        brighter: "#57b894",
+        dark: "#001e2b",
       },
       colors: {
         signature: "#008080",
+        dark: "#001e2b",
       },
     },
   },

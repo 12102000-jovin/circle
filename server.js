@@ -48,4 +48,7 @@ app.use("/User", userRoute);
 const verifyRoute = require("./src/routes/VerifyRoute");
 app.use("/Authentication", verifyRoute);
 
+// const JWTAuthRoute = require("./src/routes/JWTAuth");
+// app.use("/", JWTAuthRoute);
+
 module.exports = app;

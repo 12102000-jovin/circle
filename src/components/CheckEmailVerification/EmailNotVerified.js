@@ -5,11 +5,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import CircularProgress from "@mui/material/CircularProgress";
 
-const CheckEmailVerification = ({ open, email }) => {
+const CheckEmailVerification = ({ open, onClose, email }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const onClose = () => {
-    window.location.reload();
-  };
 
   const URL_FORMAT = process.env.REACT_APP_URL_FORMAT;
   const ResendVerificationUser_API = `${URL_FORMAT}/User/ResendVerificationEmail`;
@@ -26,6 +23,7 @@ const CheckEmailVerification = ({ open, email }) => {
 
       if (response.status === 200) {
         setIsLoading(false);
+        onClose();
       }
     } catch (error) {
       console.error("Error creating account:", error);
@@ -53,11 +51,11 @@ const CheckEmailVerification = ({ open, email }) => {
               className="mb-5 mt-4"
             />
             <p className="mt-1 mb-5 text-2xl text-center font-bold">
-              Please Verify Your Email
+              Your email has not been verified!
             </p>
             <p>
-              You are almost there! We have sent an email to{" "}
-              <strong>{email}</strong>.
+              We have sent an email to <strong>{email} </strong> when you
+              created your account.
             </p>
             <p className="mt-5">
               Just click on the link in that email to complete your account

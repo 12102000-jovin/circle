@@ -199,16 +199,51 @@ router.post("/Login", async (req, res) => {
     }
 
     // If the credentials are valid, generate a JWT
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { userEmail: user.email, userObjectId: user._id },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
 
     // Send the token as part of the response
-    res.status(200).json({ token, userId: user._id });
+    res.status(200).json({
+      token,
+      userId: user._id,
+      isVerified: user.isVerified,
+      email: user.email,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
+});
+
+// Middleware function to verify JWT token
+function verifyToken(req, res, next) {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ error: "Access denied. Token is missing." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    req.user = decoded; // Store decoded user information in the request object
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: "Invalid token." });
+  }
+}
+
+// Example of using the verifyToken middleware in your route
+router.get("/protectedRoute", verifyToken, (req, res) => {
+  // If the token is valid, you can access the user information from req.user
+  res.json({
+    message: "You have access to this protected route.",
+    user: req.user,
+  });
 });
 
 module.exports = router;

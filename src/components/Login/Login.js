@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import CircleLogo from "../../Images/CircleLogo.png";
-import LoginIllustration from "../../Images/Freelancer.png";
+import LoginIllustration from "../../Images/Freelancer2.png";
 import CreateAccount from "../CreateAccount/CreateAccount";
+import EmailNotVerified from "../CheckEmailVerification/EmailNotVerified";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import axios from "axios";
 import CloseIcon from "@mui/icons-material/Close";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [createAccountModalState, setCreateAccountModalState] = useState(false);
   const [showPasswordState, setShowPasswordState] = useState(false);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [generalError, setGeneralError] = useState("");
+  const [notVerifiedModalState, setNotVerifiedModalState] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   const URL_FORMAT = process.env.REACT_APP_URL_FORMAT;
   const UserLogin_API = `${URL_FORMAT}/User/Login`;
@@ -41,7 +46,21 @@ const Login = () => {
       });
 
       if (response.status === 200) {
-        window.location.href = "/";
+        const { data } = response;
+        if (data.isVerified) {
+          // User is verified, redirect to main application
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("isVerified", data.isVerified);
+          navigate("/");
+          console.log(data);
+        } else {
+          // User is not verified, show a message or take appropriate action
+          setGeneralError(
+            "Your account is not verified. Please verify your email."
+          );
+          setNotVerifiedModalState(true);
+          setUserEmail(data.email);
+        }
       }
     } catch (error) {
       console.error("User Login Error:", error);
@@ -55,10 +74,14 @@ const Login = () => {
     }
   };
 
+  const handleCloseEmailNotVerifiedModal = () => {
+    setNotVerifiedModalState(false);
+  };
+
   return (
     <div>
       <div className="flex flex-col justify-center items-center h-screen">
-        <div className="md:flex md:justify-around md:items-center md:w-2/3 lg:w-3/4">
+        <div className="md:flex md:justify-around md:items-center md:w-3/4 lg:w-3/4">
           <div className="mb-2 md:mr-2 md:mb-0 max-w-xs md:max-w-prose">
             <div className="flex justify-center md:justify-start">
               <img
@@ -68,12 +91,12 @@ const Login = () => {
               />
             </div>
 
-            <p className="mt-4 font-bold hidden md:block">
+            <p className="mt-4 font-bold hidden lg:block">
               Welcome to Circle, a web application designed to bridge the gap
               between job seekers and individuals searching for accommodations
               in Sydney.
             </p>
-            <div className="flex justify-center md:justify-start hidden md:block">
+            <div className="flex justify-center md:justify-start hidden lg:block">
               <img src={LoginIllustration} alt="Login Illustration" />
             </div>
           </div>
@@ -183,6 +206,11 @@ const Login = () => {
       <CreateAccount
         open={createAccountModalState}
         onClose={handleCloseCreateAccountModal}
+      />
+      <EmailNotVerified
+        open={notVerifiedModalState}
+        onClose={handleCloseEmailNotVerifiedModal}
+        email={userEmail}
       />
     </div>
   );

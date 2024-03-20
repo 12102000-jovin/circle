@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import CircleLogo from "../../Images/CircleLogo.png";
 import { Link } from "react-router-dom";
 
-const NavBar = () => {
+const NavBar = ({ isLoggedIn, handleLogout }) => {
   // State to manage the menu's open/closed status
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Reference for the menu element
@@ -88,17 +88,28 @@ const NavBar = () => {
                 </a>
               </li>
               <li>
-                <Link
-                  to="/login"
-                  className="bg-signature hover:bg-secondary text-white font-bold py-2 px-4 rounded"
-                >
-                  Login
-                </Link>
+                {!isLoggedIn && (
+                  <Link
+                    to="/login"
+                    className="bg-signature hover:bg-secondary text-white font-bold py-2 px-4 rounded-full"
+                  >
+                    Login
+                  </Link>
+                )}
+                {isLoggedIn && (
+                  <button
+                    className="bg-red-500 text-white font-bold py-2 px-4 rounded-full"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                )}
               </li>
             </ul>
           </div>
         </div>
       </nav>
+      <hr />
     </div>
   );
 };
