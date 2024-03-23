@@ -158,25 +158,25 @@ const Login = () => {
 
                 {showPasswordState ? (
                   <button
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 text-signature p-2 mr-2 rounded-md"
+                    className="absolute right-0 top-1/2 transform -translate-y-1/2 text-signature mr-2 rounded-md"
                     onClick={handleShowPassword}
                   >
                     <VisibilityOffIcon />
                   </button>
                 ) : (
                   <button
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 text-signature p-2 mr-2 rounded-md"
+                    className="absolute right-0 top-1/2 transform -translate-y-1/2 text-signature mr-2 rounded-md"
                     onClick={handleShowPassword}
                   >
                     <VisibilityIcon />
                   </button>
                 )}
               </div>
-              {/* <div class="flex justify-end"> */}
-              <p className="underline text-signature text-end">
-                forgot password
-              </p>
-              {/* </div> */}
+              <div className="flex justify-end">
+                <a href="/forgotPassword" className="underline text-signature">
+                  forgot password
+                </a>
+              </div>
               <div>
                 <button
                   className="bg-signature w-full mt-5 hover:bg-secondary text-white font-bold py-2 px-4 rounded"

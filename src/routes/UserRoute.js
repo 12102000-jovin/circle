@@ -220,30 +220,154 @@ router.post("/Login", async (req, res) => {
   }
 });
 
-// Middleware function to verify JWT token
-function verifyToken(req, res, next) {
-  const token = req.headers.authorization;
-
-  if (!token) {
-    return res.status(401).json({ error: "Access denied. Token is missing." });
-  }
-
+// Send Reset Password Email
+router.post("/SendResetPasswordEmail", async (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    req.user = decoded; // Store decoded user information in the request object
-    next();
-  } catch (error) {
-    return res.status(403).json({ error: "Invalid token." });
-  }
-}
+    const { email } = req.body;
 
-// Example of using the verifyToken middleware in your route
-router.get("/protectedRoute", verifyToken, (req, res) => {
-  // If the token is valid, you can access the user information from req.user
-  res.json({
-    message: "You have access to this protected route.",
-    user: req.user,
-  });
+    // Validate input data
+    if (!email) {
+      return res.status(400).json({ error: "Please provide an email address" });
+    }
+
+    // Find the user by email
+    const user = await UserModel.findOne({ email });
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+
+    // Set OTP expiration time
+    const otpExpiration = Date.now() + 10 * 60 * 1000;
+
+    console.log("currentTime", Date.now());
+    console.log("expiredTime", otpExpiration);
+
+    // Update user document with OTP and expiration time
+    user.otp = otp;
+    user.otpExpires = otpExpiration;
+    await user.save();
+
+    console.log(user);
+
+    // Compose Email
+    const mailOptions = {
+      from: "circleaustralia@gmail.com",
+      to: email,
+      subject: "Reset your Circle Password",
+      html: ` <div style="text-align: center; background-color: #f4f4f4; padding: 20px;">
+      <img src="https://i.ibb.co/6Zdpnmv/Circle-Logo.png" alt="Company Logo" style="max-width: 150px; margin-bottom: 20px;">
+      <h2 style="color: #333;">Reset Password</h2>
+      <p style="font-size: 16px; color: #555; line-height: 1.6;">
+        You've requested to reset your Circle account password. Please use the following OTP to reset your password:
+        <strong>${otp}</strong>
+      </p>
+      <p style="font-size: 14px; color: #777; line-height: 1.6;">
+        Note: This OTP is valid for 10 minutes. If you didn't request this, you can safely ignore this email.
+      </p>
+      <p style="font-size: 14px; color: #777;">Thank you for choosing our service!</p>
+    </div>`,
+    };
+    console.log("Sending reset password email to:", mailOptions.to);
+
+    // Send Reset Password Email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Reset Password Email Sent:", info.response);
+
+    // Respond witg a success message
+    res.status(200).json({
+      message:
+        "Reset password email sent successfully. Please check your email.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Check OTP for Reset Password
+router.post("/ValidateResetPasswordOTP", async (req, res) => {
+  try {
+    const { email, otpInput } = req.body;
+
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userOtp = user.otp;
+    const otpExpiration = user.otpExpires;
+
+    if (userOtp !== otpInput) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Check if OTP has expired
+    if (Date.now() > otpExpiration) {
+      return res.status(400).json({ error: "OTP has expired" });
+    }
+
+    // OTP is correct and not expired
+    res.json({ message: "OTP is valid" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Reset Password
+router.put("/ResetPassword", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    console.log(email);
+    console.log(newPassword);
+
+    // Validate input data
+    if (!newPassword) {
+      return res
+        .status(400)
+        .json({ error: "Please provide your New Password" });
+    }
+
+    if (newPassword.length < 8) {
+      return res
+        .status(400)
+        .json({ error: "Password need at least 8 character" });
+    }
+
+    // Find the user by email
+    const user = await UserModel.findOne({ email });
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user wirh new password
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { email: email },
+      {
+        $set: {
+          password: hashedNewPassword,
+        },
+      },
+      { new: true }
+    );
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user password:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
 module.exports = router;

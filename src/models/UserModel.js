@@ -27,6 +27,12 @@ const UserSchema = new mongoose.Schema(
     verificationToken: {
       type: String,
     },
+    otp: {
+      type: Number,
+    },
+    otpExpires: {
+      type: Date,
+    },
   },
   {
     collection: "Users",

@@ -5,6 +5,9 @@ import Home from "./components/Home/Home";
 import Login from "./components/Login/Login";
 import Verify from "./components/Verify/Verify";
 import CheckEmailVerification from "./components/CheckEmailVerification/CheckEmailVerification";
+import ForgotPassword from "./components/ForgotPassword/ForgotPassword";
+import ForgotPasswordSuccess from "./components/ForgotPassword/ForgotPasswordSuccess";
+import ResetPassword from "./components/ResetPassword/ResetPassword";
 
 function App() {
   return (
@@ -20,6 +23,12 @@ function App() {
           path="/CheckEmailVerification"
           element={<CheckEmailVerification />}
         />
+        <Route path="/ForgotPassword" element={<ForgotPassword />} />
+        <Route
+          path="/ResetPasswordEmailSent"
+          element={<ForgotPasswordSuccess />}
+        />
+        <Route path="/ResetPasswordForm" element={<ResetPassword />} />
       </Routes>
     </Router>
   );

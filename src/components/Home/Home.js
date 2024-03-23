@@ -29,7 +29,7 @@ function Home() {
       const currentTime = Date.now() / 1000;
       if (decoded.exp < currentTime) {
         // Token expired, redirect to login page
-        navigate("/login");
+        // navigate("/login"); liuggas
       } else {
         // Token is valid, user is logged in
         setIsLoggedIn(true);
@@ -53,8 +53,8 @@ function Home() {
   return (
     <div>
       <NavBar isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
-      <div className="flex justify-center">
-        <div className="bg-white p-5 w-11/12 md:w-4/5">
+      <div className="flex justify-center bg-grey pb-10">
+        <div className="bg-grey p-5 w-11/12 md:w-4/5">
           <div className="grid grid-cols-1 md:grid-cols-2 items-center">
             <div className="max-w-[700px]">
               <p className="font-black text-3xl md:text-6xl text-signature mt-10 md:m-10 mb-5">
@@ -107,7 +107,7 @@ function Home() {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 bg-dark mt-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 bg-dark">
         <div className="flex justify-center items-center p-5">
           <div className="w-11/12 md:w-4/5">
             <p className="text-white text-4xl text-center font-black m-10">

@@ -5,8 +5,8 @@ import { MdMailOutline } from "react-icons/md";
 
 const Logout = () => {
   return (
-    <footer className="flex justify-center my-10">
-      <div className="bg-white p-5 w-11/12 md:w-4/5">
+    <footer className="flex justify-center py-10 bg-grey">
+      <div className="bg-grey p-5 w-11/12 md:w-4/5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="text-center md:text-left">
             <h3 className="text-lg font-bold mb-2">About Us</h3>

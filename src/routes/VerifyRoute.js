@@ -10,16 +10,14 @@ router.get("/verify/:token", async (req, res) => {
     // Find the user in the database based on the verification token
     const user = await UserModel.findOne({ verificationToken: token });
 
-    console.log("Found user:", user);
-
     if (!user) {
       // Token not found or user already verified
-      return res.status(400).json({ message: "Invalid verification token." });
+      return res.status(400).json({ error: "Invalid verification token." });
     }
 
     // Mark the user as verified
-    user.isVerified = true;
-    user.verificationToken = undefined; // Clear the verification token
+    // user.isVerified = true;
+    // user.verificationToken = undefined; // Clear the verification token
 
     // Save the updated user in the database
     await user.save();

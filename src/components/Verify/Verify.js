@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import Verified from "../../Images/Verified.svg";
 
 const Verify = () => {
   const { username, token } = useParams();
@@ -9,6 +10,8 @@ const Verify = () => {
   const URL_FORMAT = process.env.REACT_APP_URL_FORMAT;
   const VerifyToken_API = `${URL_FORMAT}/Authentication/Verify/`;
   const checkVerificationByUsername_API = `${URL_FORMAT}/Authentication/checkVerificationByUsername/`;
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,9 +64,49 @@ const Verify = () => {
       {loading ? (
         <p>Loading...</p>
       ) : verified ? (
-        <p>Verified</p>
+        <div className="bg-gray-200 min-h-screen flex justify-center items-center">
+          <div className="bg-white p-8 rounded-xl shadow-md w-11/12 md:w-2/3 lg:w-2/5 ">
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-3xl font-bold mb-6">Email Verified</p>
+              <img
+                src={Verified}
+                alt="Verified Illustrations"
+                className="max-w-[300px] mb-10"
+              />
+              <p className="text-lg text-center">
+                Your email has been successfully verified.
+              </p>
+              <button
+                className="bg-signature hover:bg-secondary text-white font-bold py-2 px-4 rounded-full mt-6"
+                onClick={() => navigate("/")}
+              >
+                Login to Circle
+              </button>
+            </div>
+          </div>
+        </div>
       ) : (
-        <p>Verification failed</p>
+        <div className="bg-gray-200 min-h-screen flex justify-center items-center">
+          <div className="bg-white p-8 rounded-xl shadow-md w-11/12 md:w-2/3 lg:w-2/5 ">
+            <div className="flex flex-col justify-center items-center">
+              <p className="text-3xl font-bold mb-6">Email Verified</p>
+              <img
+                src={Verified}
+                alt="Verified Illustrations"
+                className="max-w-[300px] mb-10"
+              />
+              <p className="text-lg text-center">
+                Your email has been successfully verified.
+              </p>
+              <button
+                className="bg-signature hover:bg-secondary text-white font-bold py-2 px-4 rounded-full mt-6"
+                onClick={() => navigate("/")}
+              >
+                Login to Circle
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
