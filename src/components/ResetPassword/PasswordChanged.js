@@ -23,9 +23,12 @@ const PasswordChange = ({ open, onClose }) => {
         </div>
 
         <div className="flex justify-center mt-10 mb-10">
-          <button className="bg-signature hover:bg-secondary text-white font-bold py-2 px-4 rounded-full">
+          <a
+            href="/login"
+            className="bg-signature hover:bg-secondary text-white font-bold py-2 px-4 rounded-full"
+          >
             Login to Circle
-          </button>
+          </a>
         </div>
       </DialogContent>
     </Dialog>

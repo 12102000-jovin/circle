@@ -27,8 +27,6 @@ const Verify = () => {
             throw new Error(`Verification failed: ${response.statusText}`);
           }
 
-          // Continue with verification logic...
-
           const data = await response.json();
           console.log(data); // Log the response for debugging
 
@@ -78,7 +76,7 @@ const Verify = () => {
               </p>
               <button
                 className="bg-signature hover:bg-secondary text-white font-bold py-2 px-4 rounded-full mt-6"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/login")}
               >
                 Login to Circle
               </button>

@@ -16,8 +16,8 @@ router.get("/verify/:token", async (req, res) => {
     }
 
     // Mark the user as verified
-    // user.isVerified = true;
-    // user.verificationToken = undefined; // Clear the verification token
+    user.isVerified = true;
+    user.verificationToken = undefined; // Clear the verification token
 
     // Save the updated user in the database
     await user.save();
