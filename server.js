@@ -45,6 +45,9 @@ app.listen(port, () => {
 const userRoute = require("./src/routes/UserRoute");
 app.use("/User", userRoute);
 
+// const authRoute = require("./src/routes.AuthRoute");
+// app.use("/Auth", authRoute);
+
 const verifyRoute = require("./src/routes/VerifyRoute");
 app.use("/Authentication", verifyRoute);
 

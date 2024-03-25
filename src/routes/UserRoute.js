@@ -58,22 +58,26 @@ router.post("/CreateUserAccount", async (req, res) => {
       return res.status(409).json({ error: "Username already in use." });
     }
 
+    const salt = await bcrypt.genSalt();
+    console.log(salt);
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    console.log(password);
 
-    // Create a new user with a verification token
-    const verificationToken = generateVerificationToken();
+    // Generate OTP
+    const otp = Math.floor(10000 + Math.random() * 900000); // 6-digit OTP
+    // Set OTP expiration time
+    const otpExpiration = Date.now() + 10 * 60 * 1000;
+
     const newUser = new UserModel({
       fullName,
       email,
       username,
       password: hashedPassword,
-      verificationToken,
-      isVerified: false, // Set initially to false
+      isVerified: false,
+      otp: otp,
+      otpExpires: otpExpiration,
     });
-
-    // Construct verification link
-    const verificationLink = `${URL_FORMAT_FRONT_END}/Authentication/Verify/${username}/${verificationToken}`;
 
     // Save the user in the database
     await newUser.save();
@@ -87,11 +91,17 @@ router.post("/CreateUserAccount", async (req, res) => {
       <img src="https://i.ibb.co/6Zdpnmv/Circle-Logo.png" alt="Company Logo" style="max-width: 150px; margin-bottom: 20px;">
       <h2 style="color: #333;">Account Verification</h2>
       <p style="font-size: 16px; color: #555; line-height: 1.6;">
-        Click <a href="${verificationLink}" style="color: #007bff; text-decoration: none; font-weight: bold;">here</a> 
-        to verify your email address.
+          Welcome to our platform! To complete your registration, please verify your email address by entering the one-time password (OTP) provided below:
+      </p>
+      <p style="font-size: 20px; color: #007bff; font-weight: bold;">
+          Your OTP: <strong>${otp}</strong>
+      </p>
+      <p style="font-size: 16px; color: #555; line-height: 1.6;">
+          Please enter this code in the appropriate field on our website to verify your email address and gain full access to our services.
       </p>
       <p style="font-size: 14px; color: #777;">Thank you for choosing our service!</p>
-    </div>`,
+  </div>
+  `,
     };
 
     console.log("Sending verification email to:", mailOptions.to);
@@ -129,16 +139,15 @@ router.post("/ResendVerificationEmail", async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
-    // Generate a new verification token
-    const newVerificationToken = generateVerificationToken();
+    // Generate OTP
+    const otp = Math.floor(10000 + Math.random() * 900000); // 6-digit OTP
+    // Set OTP expiration time
+    const otpExpiration = Date.now() + 10 * 60 * 1000;
 
-    // Update user with the new verification token
-    user.verificationToken = newVerificationToken;
+    user.otp = otp;
+    user.otpExpires = otpExpiration;
     user.isVerified = false; // Set to false as the email is not verified yet
     await user.save();
-
-    // Construct new verification link
-    const verificationLink = `${URL_FORMAT_FRONT_END}/Authentication/Verify/${user.username}/${newVerificationToken}`;
 
     // Compose email
     const mailOptions = {
@@ -149,11 +158,16 @@ router.post("/ResendVerificationEmail", async (req, res) => {
       <img src="https://i.ibb.co/6Zdpnmv/Circle-Logo.png" alt="Company Logo" style="max-width: 150px; margin-bottom: 20px;">
       <h2 style="color: #333;">Account Verification</h2>
       <p style="font-size: 16px; color: #555; line-height: 1.6;">
-        Click <a href="${verificationLink}" style="color: #007bff; text-decoration: none; font-weight: bold;">here</a> 
-        to verify your email address.
+          Please verify your email address by entering the one-time password (OTP) provided below:
+      </p>
+      <p style="font-size: 20px; color: #007bff; font-weight: bold;">
+          Your OTP: <strong>${otp}</strong>
+      </p>
+      <p style="font-size: 16px; color: #555; line-height: 1.6;">
+          Please enter this code in the appropriate field on our website to verify your email address and gain full access to our services.
       </p>
       <p style="font-size: 14px; color: #777;">Thank you for choosing our service!</p>
-    </div>`,
+  </div>`,
     };
 
     console.log("Resending verification email to:", mailOptions.to);
@@ -311,6 +325,43 @@ router.post("/ValidateResetPasswordOTP", async (req, res) => {
     if (Date.now() > otpExpiration) {
       return res.status(400).json({ error: "OTP has expired" });
     }
+
+    // OTP is correct and not expired
+    res.json({ message: "OTP is valid" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Check OTP for Verify User Email
+router.post("/ValidateEmailVerificationOTP", async (req, res) => {
+  try {
+    const { email, otpInput } = req.body;
+
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userOtp = user.otp;
+    const otpExpiration = user.otpExpires;
+
+    if (userOtp !== otpInput) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Check if OTP has expired
+    if (Date.now() > otpExpiration) {
+      return res.status(400).json({ error: "OTP has expired" });
+    }
+
+    // Assuming isVerified is a property in the user document
+    user.isVerified = true;
+
+    // Save the updated user document
+    await user.save();
 
     // OTP is correct and not expired
     res.json({ message: "OTP is valid" });

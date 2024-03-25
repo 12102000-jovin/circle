@@ -1,23 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import CircleLogo from "../../Images/CircleLogo.png";
-import { Dialog, DialogContent } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useNavigate, useLocation } from "react-router-dom";
+import EmailVerified from "../CheckEmailVerification/EmailVerified";
 
-const CheckEmailVerification = ({ open, email }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const onClose = () => {
-    window.location.reload();
-  };
-
+const CheckEmailVerification = () => {
   const URL_FORMAT = process.env.REACT_APP_URL_FORMAT;
   const ResendVerificationUser_API = `${URL_FORMAT}/User/ResendVerificationEmail`;
+  const ValidateEmailVerificationOTP_API = `${URL_FORMAT}/User/ValidateEmailVerificationOTP`;
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isVerifiedModalState, setIsVerifiedModalState] = useState(false);
+  const [isResendLoading, setIsResendLoading] = useState(false);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+  const location = useLocation();
+  const email = location.state;
 
   const handleResendVerificationEmail = async () => {
-    setIsLoading(true);
+    setIsResendLoading(true);
 
-    console.log(email);
+    console.log("email", email);
 
     try {
       const response = await axios.post(ResendVerificationUser_API, {
@@ -25,56 +28,131 @@ const CheckEmailVerification = ({ open, email }) => {
       });
 
       if (response.status === 200) {
-        setIsLoading(false);
+        setIsResendLoading(false);
       }
     } catch (error) {
       console.error("Error creating account:", error);
+      setIsResendLoading(false);
     }
   };
 
-  return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogContent>
-        <div className="relative">
-          <div className="absolute top-0 right-0">
-            <button
-              className="bg-red-600 hover:bg-red-500 text-white font-semibold
-              py-1 pl-2 pr-2 rounded"
-              onClick={onClose}
-            >
-              <CloseIcon style={{ fontSize: "small" }} />
-            </button>
-          </div>
-          <div className="flex flex-col justify-center items-center bg-white text-center rounded-xl">
-            <img
-              src={CircleLogo}
-              alt="Circle Logo"
-              width="100"
-              className="mb-5 mt-4"
-            />
-            <p className="mt-1 mb-5 text-2xl text-center font-bold">
-              Please Verify Your Email
-            </p>
-            <p>
-              You are almost there! We have sent an email to{" "}
-              <strong>{email}</strong>.
-            </p>
-            <p className="mt-5">
-              Just click on the link in that email to complete your account
-              creation. If you don't see it, you may need to check your spam
-              folder.
-            </p>
-            <p className="mt-5"> Still can't find the email?</p>
+  // Digit Input
+  const [otp, setOtp] = useState(new Array(6).fill(""));
+  const otpBoxReference = useRef([]);
 
+  const [otpString, setOtpString] = useState(null);
+
+  const handleChange = (value, index) => {
+    let newArr = [...otp];
+    newArr[index] = value;
+    setOtp(newArr);
+
+    // Concatenate the OTP digits into a single string
+    const otpString = newArr.join("");
+    setOtpString(otpString);
+
+    if (value && index < 6 - 1) {
+      otpBoxReference.current[index + 1].focus();
+    }
+  };
+
+  const handleBackspaceAndEnter = (e, index) => {
+    if (e.key === "Backspace" && !e.target.value && index > 0) {
+      otpBoxReference.current[index - 1].focus();
+    }
+    if (e.key === "Enter" && e.target.value && index < 6 - 1) {
+      otpBoxReference.current[index + 1].focus();
+    }
+  };
+
+  const handleOTP = async () => {
+    try {
+      setIsSubmitLoading(true);
+      console.log(otpString);
+      console.log(email);
+      const response = await axios.post(ValidateEmailVerificationOTP_API, {
+        email,
+        otpInput: Number(otpString),
+      });
+
+      if (response.status === 200) {
+        console.log("Email successfully Verified");
+        setIsVerifiedModalState(true);
+        setIsSubmitLoading(false);
+      }
+    } catch (error) {
+      console.error("Error sending email");
+      setIsSubmitLoading(false);
+      if (error.response && error.response.data) {
+        const { error: errorMessage } = error.response.data;
+        setErrorMessage(errorMessage); // Set general error message from backend
+      } else {
+        setErrorMessage("An error occurred. Please try again later."); // Set a generic error message
+      }
+    }
+  };
+
+  const handleCloseVerifiedModal = () => {
+    setIsVerifiedModalState(false);
+  };
+
+  return (
+    <div className="bg-gray-200 min-h-screen flex justify-center items-center">
+      <div className="bg-white p-8 rounded-xl shadow-md w-11/12 md:w-2/3 lg:w-2/5 ">
+        <div className="flex flex-col justify-center items-center bg-white text-center rounded-xl">
+          <img
+            src={CircleLogo}
+            alt="Circle Logo"
+            width="150"
+            className="mb-5 mt-4"
+          />
+          <p className="mt-1 mb-5 text-2xl text-center font-bold">
+            Please Verify Your Email
+          </p>
+          <p>
+            You are almost there! We have sent an email to{" "}
+            <strong>{email}</strong>.
+          </p>
+          <p className="mt-5 mb-10">
+            Please enter the verification code to verify your email.
+          </p>
+          {errorMessage && (
+            <div className="flex justify-center w-full">
+              <div className="mb-10 w-5/6">
+                <p className="bg-red-100 border border-red-400 text-red-700 px-4 py-1 rounded text-center">
+                  {errorMessage}
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-center mb-10">
+            <div className="flex items-center gap-2 md:gap-4">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  value={digit}
+                  maxLength={1}
+                  onChange={(e) => handleChange(e.target.value, index)}
+                  onKeyUp={(e) => handleBackspaceAndEnter(e, index)}
+                  ref={(reference) =>
+                    (otpBoxReference.current[index] = reference)
+                  }
+                  className={`border h-10 md:h-12 p-3 w-1/3 md:w-14 lg:w-12 rounded-md block focus:border-2 focus:outline-none appearance-none text-center`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="w-full flex flex-col justify-center">
             <button
-              className={`bg-signature text-white font-bold py-2 px-4 rounded mt-5 hover:bg-secondary ${
-                isLoading ? "opacity-75 cursor-not-allowed" : ""
+              className={`bg-signature hover:bg-secondary text-white font-bold py-2 px-4 rounded-full ${
+                isSubmitLoading ? "opacity-75 cursor-not-allowed" : ""
               }`}
-              onClick={handleResendVerificationEmail}
-              disabled={isLoading}
+              onClick={handleOTP}
+              disabled={isSubmitLoading}
             >
               <div className="flex items-center justify-center">
-                {isLoading && (
+                {isSubmitLoading && (
                   <CircularProgress
                     color="inherit"
                     style={{
@@ -84,13 +162,47 @@ const CheckEmailVerification = ({ open, email }) => {
                     }}
                   />
                 )}
-                {isLoading ? "Sending Email..." : " Resend Email"}
+                {isSubmitLoading ? <p>Submitting... </p> : <p>Submit</p>}
               </div>
             </button>
+
+            <p className="mt-10"> Can't find the email?</p>
+            <div className="flex flex-col justify-center">
+              <button
+                className={` text-signature font-bold  rounded-full ${
+                  isSubmitLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+                onClick={handleResendVerificationEmail}
+                disabled={isResendLoading}
+              >
+                <div className="flex items-center justify-center">
+                  {isResendLoading && (
+                    <CircularProgress
+                      color="inherit"
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        marginRight: "8px",
+                      }}
+                    />
+                  )}
+                  {isResendLoading ? (
+                    <p>Sending Email...</p>
+                  ) : (
+                    <p className="underline">Resend Email</p>
+                  )}
+                </div>
+              </button>
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+      <EmailVerified
+        open={isVerifiedModalState}
+        onClose={handleCloseVerifiedModal}
+        email={email}
+      />
+    </div>
   );
 };
 

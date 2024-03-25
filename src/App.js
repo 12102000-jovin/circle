@@ -8,6 +8,7 @@ import CheckEmailVerification from "./components/CheckEmailVerification/CheckEma
 import ForgotPassword from "./components/ForgotPassword/ForgotPassword";
 import ForgotPasswordSuccess from "./components/ForgotPassword/ForgotPasswordSuccess";
 import ResetPassword from "./components/ResetPassword/ResetPassword";
+import CreateAccountModal from "./components/CreateAccount/CreateAccount";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/Login" element={<Login />} />
+        <Route path="/CreateAccount" element={<CreateAccountModal />} />
         <Route
           path="/Authentication/Verify/:username/:token"
           element={<Verify />}

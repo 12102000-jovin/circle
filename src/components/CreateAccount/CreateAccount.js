@@ -7,6 +7,7 @@ import CircleLogo from "../../Images/CircleLogo.png";
 import axios from "axios";
 import CheckEmailVerification from "../CheckEmailVerification/CheckEmailVerification";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useNavigate } from "react-router-dom";
 
 const CreateAccountModal = ({ open, onClose }) => {
   const [showPasswordState, setShowPasswordState] = useState(false);
@@ -28,6 +29,8 @@ const CreateAccountModal = ({ open, onClose }) => {
   const [verifyModalState, setVerifyModalState] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const URL_FORMAT = process.env.REACT_APP_URL_FORMAT;
   const CreateUser_API = `${URL_FORMAT}/User/CreateUserAccount`;
@@ -139,7 +142,7 @@ const CreateAccountModal = ({ open, onClose }) => {
 
       if (response.status === 201) {
         setIsLoading(false);
-        setVerifyModalState(true);
+        navigate("/CheckEmailVerification", { state: email });
       }
     } catch (error) {
       console.error("Error creating account:", error);
@@ -380,13 +383,15 @@ const CreateAccountModal = ({ open, onClose }) => {
           </div>
         </DialogContent>
       </Dialog>
-      <div>
-        <CheckEmailVerification
-          open={verifyModalState}
-          onClose={handleCloseVerifyModal}
-          email={email}
-        />
-      </div>
+      {verifyModalState && (
+        <div>
+          <CheckEmailVerification
+            open={verifyModalState}
+            onClose={handleCloseVerifyModal}
+            email={email}
+          />
+        </div>
+      )}
     </div>
   );
 };

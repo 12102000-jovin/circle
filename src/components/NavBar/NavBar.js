@@ -87,6 +87,17 @@ const NavBar = ({ isLoggedIn, handleLogout }) => {
                   Home
                 </a>
               </li>
+              {isLoggedIn && (
+                <li>
+                  <a
+                    href="#"
+                    class="block py-2 px-3 text-black rounded  dark:text-white md:dark:text-blue-500"
+                    aria-current="page"
+                  >
+                    Profile
+                  </a>
+                </li>
+              )}
               <li>
                 {!isLoggedIn && (
                   <Link
@@ -97,12 +108,14 @@ const NavBar = ({ isLoggedIn, handleLogout }) => {
                   </Link>
                 )}
                 {isLoggedIn && (
-                  <button
-                    className="bg-red-500 text-white font-bold py-2 px-4 rounded-full"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
+                  <div>
+                    <button
+                      className="bg-red-500 text-white font-bold py-2 px-4 rounded-full"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
                 )}
               </li>
             </ul>

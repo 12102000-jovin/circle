@@ -156,7 +156,9 @@ const ForgotPasswordSuccess = () => {
               {isSubmitLoading ? <p>Submitting... </p> : <p>Submit</p>}
             </div>
           </button>
-          <div className="flex flex-col justify-center mt-5">
+
+          <p className="mt-10 text-center"> Can't find the email?</p>
+          <div className="flex flex-col justify-center">
             <button
               className={` text-signature font-bold  rounded-full ${
                 isSubmitLoading ? "opacity-75 cursor-not-allowed" : ""
@@ -178,7 +180,7 @@ const ForgotPasswordSuccess = () => {
                 {isResendLoading ? (
                   <p>Sending Email...</p>
                 ) : (
-                  <p>Resend Email</p>
+                  <p className="underline">Resend Email</p>
                 )}
               </div>
             </button>
