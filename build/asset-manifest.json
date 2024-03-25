@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/static/css/main.6ec52a57.css",
+    "main.js": "/static/js/main.1f55e0ad.js",
+    "static/js/453.259edde9.chunk.js": "/static/js/453.259edde9.chunk.js",
+    "static/media/Accomodation.svg": "/static/media/Accomodation.56f25c9b6aa7f8705fdc536056215c57.svg",
+    "static/media/CircleLogo.png": "/static/media/CircleLogo.c6a0ed8c2540945df5b2.png",
+    "static/media/JobHunt.svg": "/static/media/JobHunt.d11e7a66f7c6bd9cd46c2ea05a40a28f.svg",
+    "static/media/Freelancer2.png": "/static/media/Freelancer2.bec696dea1962894012a.png",
+    "static/media/Done.svg": "/static/media/Done.29fa4164957cc62232e1ac703e78c552.svg",
+    "static/media/NotVerified.svg": "/static/media/NotVerified.03d40c2e6d11766f37c7b4b7c4b79ddf.svg",
+    "static/media/SearchAccomodation.svg": "/static/media/SearchAccomodation.9a3008815f3724f43e08c29393d02ad9.svg",
+    "static/media/Verified.svg": "/static/media/Verified.eb56d6627dfc2286fde886ee2fbe4e6e.svg",
+    "index.html": "/index.html",
+    "main.6ec52a57.css.map": "/static/css/main.6ec52a57.css.map",
+    "main.1f55e0ad.js.map": "/static/js/main.1f55e0ad.js.map",
+    "453.259edde9.chunk.js.map": "/static/js/453.259edde9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6ec52a57.css",
+    "static/js/main.1f55e0ad.js"
+  ]
+}
