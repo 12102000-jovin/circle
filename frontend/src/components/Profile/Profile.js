@@ -7,13 +7,13 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const URL_FORMAT = process.env.REACT_APP_URL_FORMAT;
-  const CheckAccesTokenToProfilePage_API = `${URL_FORMAT}/User/Profile`;
+  const CheckAccessTokenToProfilePage_API = `${URL_FORMAT}/User/Profile`;
 
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
         // Make a request to the backend to check if the user is authenticated
-        const response = await axios.get(CheckAccesTokenToProfilePage_API, {
+        const response = await axios.get(CheckAccessTokenToProfilePage_API, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // Assuming you store the access token in localStorage
           },
@@ -21,13 +21,47 @@ const Profile = () => {
         // If authentication is succeessful, set loading to false
         setLoading(false);
       } catch (error) {
-        // If authentication fails, redirect to the login page or display an error message
-        console.error("Authentication failed:", error);
-        // Redirect to the login page
-        navigate("/login");
-
-        const accessToken = localStorage.getItem("accessToken");
-        console.log(accessToken);
+        // If authentication fails due to token expiration, attempt to refresh the token
+        if (error.response && error.response.status === 403) {
+          console.log("test1");
+          try {
+            console.log("test2");
+            // Attempt to refresh the access token
+            const refreshResponse = await axios.post(
+              `${URL_FORMAT}/User/refreshToken`,
+              {
+                refreshToken: localStorage.getItem("refreshToken"),
+              }
+            );
+            console.log("test3");
+            // If token refresh is successful, update the access token in localStorage
+            localStorage.setItem(
+              "accessToken",
+              refreshResponse.data.accessToken
+            );
+            // Retry the original request
+            const retryResponse = await axios.get(
+              CheckAccessTokenToProfilePage_API,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem(
+                    "accessToken"
+                  )}`,
+                },
+              }
+            );
+            // If the retry is successful, set loading to false
+            setLoading(false);
+          } catch (refreshError) {
+            // If token refresh fails, redirect to the login page
+            console.error("Token refresh failed:", refreshError);
+            navigate("/login");
+          }
+        } else {
+          // If authentication fails for other reasons, redirect to the login page
+          console.error("Authentication failed:", error);
+          navigate("/login");
+        }
       }
     };
 

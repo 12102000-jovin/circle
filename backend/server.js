@@ -45,7 +45,4 @@ app.listen(port, () => {
 const userRoute = require("./routes/UserRoute");
 app.use("/User", userRoute);
 
-const verifyRoute = require("./routes/VerifyRoute");
-app.use("/Authentication", verifyRoute);
-
 module.exports = app;
