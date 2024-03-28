@@ -49,9 +49,8 @@ const Login = () => {
         const { data } = response;
         if (data.isVerified) {
           // User is verified, redirect to main application
-          localStorage.setItem("token", data.token);
           localStorage.setItem("accessToken", data.accessToken);
-          localStorage.setItem("isVerified", data.isVerified);
+          localStorage.setItem("refreshToken", data.refreshToken);
           navigate("/");
           console.log(data);
         } else {

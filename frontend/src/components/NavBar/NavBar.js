@@ -87,17 +87,17 @@ const NavBar = ({ isLoggedIn, handleLogout }) => {
                   Home
                 </a>
               </li>
-              {isLoggedIn && (
-                <li>
-                  <a
-                    href="/Profile"
-                    class="block py-2 px-3 text-black rounded  dark:text-white md:dark:text-blue-500"
-                    aria-current="page"
-                  >
-                    Profile
-                  </a>
-                </li>
-              )}
+
+              <li>
+                <a
+                  href="/Profile"
+                  class="block py-2 px-3 text-black rounded  dark:text-white md:dark:text-blue-500"
+                  aria-current="page"
+                >
+                  Profile
+                </a>
+              </li>
+
               <li>
                 {!isLoggedIn && (
                   <Link

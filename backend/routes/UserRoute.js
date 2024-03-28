@@ -194,71 +194,6 @@ router.get("/Profile", authenticateToken, (req, res) => {
   res.json({ message: "Access granted" });
 });
 
-// Login API
-router.post("/Login", async (req, res) => {
-  try {
-    const { identifier, password } = req.body;
-
-    if (!identifier || !password) {
-      return res.status(400).json({ error: "Fill all the input." });
-    }
-
-    // Find the user by username or email
-    const user = await UserModel.findOne({
-      $or: [{ username: identifier }, { email: identifier }],
-    });
-
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials." });
-    }
-
-    // Compare the provided password with the stored hashed password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid credentials." });
-    }
-
-    // If the credentials are valid, generate a JWT
-    const token = jwt.sign(
-      { userEmail: user.email, userObjectId: user._id },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "1h",
-      }
-    );
-
-    const accessToken = jwt.sign(
-      { userEmail: user.email },
-      process.env.ACCESS_TOKEN_SECRET
-    );
-
-    // Send the token as part of the response
-    res.status(200).json({
-      token,
-      userId: user._id,
-      isVerified: user.isVerified,
-      email: user.email,
-      accessToken: accessToken,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return res.sendStatus(401);
-
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-}
-
 // Send Reset Password Email
 router.post("/SendResetPasswordEmail", async (req, res) => {
   try {
@@ -443,6 +378,120 @@ router.put("/ResetPassword", async (req, res) => {
   } catch (error) {
     console.error("Error updating user password:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Login API
+router.post("/Login", async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return res.status(400).json({ error: "Fill all the input." });
+    }
+
+    // Find the user by username or email
+    const user = await UserModel.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials." });
+    }
+
+    // Compare the provided password with the stored hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Invalid credentials." });
+    }
+
+    // If the credentials are valid, generate access token and refresh token
+    const accessToken = jwt.sign(
+      { userEmail: user.email },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "15s" } // Set expiration for access token
+    );
+
+    const refreshToken = jwt.sign(
+      { userEmail: user.email },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "1m" } // Set expiration for refresh token
+    );
+
+    // Store the refresh token in the database (hashed for security)
+    user.refreshToken = await bcrypt.hash(refreshToken, 10);
+    await user.save();
+
+    // Send the token as part of the response
+    res.status(200).json({
+      userId: user._id,
+      isVerified: user.isVerified,
+      email: user.email,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+}
+
+// Refresh Token Endpoint
+router.post("/refreshToken", async (req, res) => {
+  const { refreshToken } = req.body;
+
+  // Verify refresh token validity
+  try {
+    const user = await UserModel.findOne();
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid refresh token." });
+    }
+
+    // Compare the hashed refresh token with the stored hashed token
+    const refreshTokenMatch = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken
+    );
+
+    if (!refreshTokenMatch) {
+      return res.status(401).json({ error: "Invalid refresh token." });
+    }
+
+    // Verify if the refresh token has expired
+    const decodedRefreshToken = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+    if (decodedRefreshToken.exp < Date.now() / 1000) {
+      return res.status(401).json({ error: "Refresh token has expired." });
+    }
+
+    // Generate a new access token
+    const newAccessToken = jwt.sign(
+      { userEmail: user.email },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "10s" }
+    );
+
+    // Send the new access token to the client
+    res.status(200).json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

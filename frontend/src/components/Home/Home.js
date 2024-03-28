@@ -17,11 +17,10 @@ function Home() {
 
   useEffect(() => {
     // Check if token exists in local storage
-    const token = localStorage.getItem("token");
-
-    if (token) {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
       // Decode the token to get user information
-      const decoded = jwtDecode(token);
+      const decoded = jwtDecode(accessToken);
 
       console.log("This is the decoded: ", decoded);
 

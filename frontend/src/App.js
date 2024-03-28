@@ -19,10 +19,6 @@ function App() {
         <Route path="/Login" element={<Login />} />
         <Route path="/CreateAccount" element={<CreateAccountModal />} />
         <Route
-          path="/Authentication/Verify/:username/:token"
-          element={<Verify />}
-        />
-        <Route
           path="/CheckEmailVerification"
           element={<CheckEmailVerification />}
         />
